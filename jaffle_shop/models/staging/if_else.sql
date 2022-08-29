@@ -12,23 +12,26 @@
 
     with partner_group_points as (
 
-        {% for partner in partners %}
+        select months, partner, points_amount, "none" as status
+        from ref('my_distinct_partners')
+    )
 
-            SELECT
-                TO_CHAR( TO_DATE(points_timestamp, 'YYYY-MM-DD'), 'YYYY-MM') AS "months",
-                '{{partner}}' as partner,
-                SUM(points_amount) AS "points_amount",
-                <custom calculation for status here> as status
-            FROM
-                `{{ target.project }}.platform_data_{{partner}}.raw_points`
-            GROUP BY
-                months,
-                points_amount,
-                status
-            ORDER BY months DESC
-            {% if not loop.last %} UNION ALL {% endif %}
+    SELECT
+    months,
+    partner,
+    sum(points_amount) as points_amount,
+    status
+    FROM partner_group_points
+    GROUP BY months,partner,status
 
-        {% endfor %}
+    {% endif %}
+{% endif %}
+{% if partner_count == 4 %}
+    {% if partners != '' %}
+       with partner_group_points as (
+
+        select months, partner, points_amount, "valid" as status
+        from ref('my_distinct_partners')
     )
 
     SELECT
